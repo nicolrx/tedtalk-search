@@ -15,28 +15,9 @@ function getClosedCaptionsForVideo($videoId, $countUrls, $key) {
 	// tracks are returned in order we think is best - 
 	// try first, if its garbage, try 2nd, etc.
 	$availableTracks = getAvailableTracks($baseUrl);
-
-	$text = null;
-	foreach ($availableTracks as $track) {
-		$text = getClosedCaptionText($baseUrl, $track);
-		
-		// check for garbage
-		if (stripos($text, '[Content_Types]') !== false) {
-			// garbage found - some legible text and a lot
-			// that is not legible. dunno what this is, but 
-			// it actually appears on the YT video if you view 
-			// the page... skip 
-			continue;
-		}
-		
-		if ($text) {
-			// didnt skip, and we have text.. win!
-			break;
-		}
-	}
 	
 	$urlVid = "https://www.youtube.com/watch?v=".$videoId;
-	
+	$imgVid = "http://img.youtube.com/vi/".$videoId."/0.jpg";
 	// 	Curl init
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_URL, $urlVid);
@@ -54,15 +35,28 @@ function getClosedCaptionsForVideo($videoId, $countUrls, $key) {
 			}
 		}
 	
+	$text = null;
+	
+	foreach ($availableTracks as $key=>$track) {
+	$text = getClosedCaptionText($baseUrl, $track);
+		
 	$xmlData = file_get_contents($text);
  	$xmlNode = simplexml_load_string($xmlData);
     $arrayData = xmlToArray($xmlNode);
+    $countProp = count($arrayData['transcript']['text']);
+		for($i=0; $i < $countProp; $i++) {
+    $arrayData['transcript']['text']{$i}['url'] = $urlVid;
+    $arrayData['transcript']['text']{$i}['title'] = addslashes(htmlspecialchars_decode(strip_tags((string)$item['title']), ENT_QUOTES));
+    $arrayData['transcript']['text']{$i}['img'] = $imgVid;
+    $arrayData['transcript']['text']{$i}['id'] = "clinton"; // change tag
     
-    $arrayData['transcript']['url'] = $urlVid;
-    $arrayData['transcript']['title'] = addslashes(htmlspecialchars_decode(strip_tags((string)$item['title']), ENT_QUOTES));
-    $arrayData['transcript']['id'] = "clinton";
-       
     $data = json_encode($arrayData);
+  
+  		}
+	}
+	
+       
+    
     
     $data = str_replace('\n',' ',$data);
     $data = str_replace('"text"','"script"',$data); 
@@ -185,8 +179,9 @@ function getClosedCaptionText($baseUrl, array $track) {
 	
 }
 
-$url = ["pXXfiO4B5eA", "JIFf74zGwhw", "eJ5kNEL0KzI", "xSAyOlQuVX4", "x_fW7fbZ1qA", "_NiDay86Ft0", "qzEAyM0LK2U", "4Q_s6cXSv_8", "GyHjts09XCc", "Wk0wGhL4NqU", "lDRSITwAXQQ", "k-1Dqz8Hj8g", "M2RlwN7tvVQ", "8172bC179T4", "3MLsRBjkrVo", "2hptE3ewkD4", "Fs0pZ_GrTy8", "6LYgg3_Emy0", "VYj5hUnmTHc", "GwD-GxZhl1E", "_0qO3Xm9de8", "VZulo6aMtBw", "ai092-4JRYE", "bnd0uipQKO4", "ydydhlkCVSQ", "nXyTU4Qf6d0", "X-M8DQyxJJs", "hI9YO460YRU", "_NiDay86Ft0", "nu16SuKt2gY", "kPXwxHRqcpY", "66nT9vv4Ifo", "-ZoZelFVbLc", "s3njVYErHeI", "E9VGh-13yto", "4LUq0PBZAtA", "EwaVWdhxrWA", "yUuXueizmZY", "DUBbS4xa3LY", "D9rhRJ2u7Ec", "-3MkYFq3f-Y", "a-77QgKuzmo", "12gKUVXHbWw", "Ceb7Pp7e7u4", "OBB1BHsDTbI", "Fpzzmry6NIE", "bX2qnkO3eX8", "ue7hP7AOplo", "wN0QWV-6ozE", "EAEnBo9Uh1g"]; // trump
-// $url = ["YxI6GV30yL0", "Fl6XFatFTjs", "5VE9nihee7o", "u3dhGy1-Z2k", "fy_WJEs71Gw", "-6m_0fOkQ3E", "D-5ZVHcm-2M", "-dHLd3DnkEI", "RD5qQhEy2L0", "VNc6oAnCOLs", "U2ytZcISqKY", "GOmwVXDdKRM", "g_wkSGLVpcE", "ZBpjqP3qrMQ", "SOtiKXvA-q0", "UbEalLMQvOw", "Z1wRoI-8dhg", "fsR8wK5XqUM", "nD1QaeeZ-gw", "DnEfPDOifc0", "75x6nb5NqYM", "BFQG0Bfqaoo", "rG8cGkbGbYQ", "VNSUxI-9vqI", "MWAJQEuYbTA", "iSdR5bgpVZc", "lXnA8-8lVbM", "hPJdGVPf9h0", "y03Sc0H3n8s", "_02BeByzqPY", "c_9ThARis10", "m_ZtgSTpv9Y", "-vOoPd3BUT8", "8oimjUWpWlU", "f3-13H3A2Y8", "FsYK_EOJsms", "nqaNtO27G9Q", "H1gfcakwieU", "BPIARhlQarw", "cG9IYu4TMj4", "MI6iFz14O3U", "9uVWXeCULAM", "rKV9nCadurE", "P2Jhepbbcjc", "Gu29J45xPZ8", "feJbR25IHj4", "Ecg3n1DhiJc", "dIA0NXmB3gU", "polD2-vVj8s", "aIB6Ac8Bl1w", "RjarHX2MGTQ", "s_HIEIiv8Ao", "j5Xv80YydnI"]; // clinton
+// $url = ["pXXfiO4B5eA", "JIFf74zGwhw", "eJ5kNEL0KzI", "xSAyOlQuVX4", "x_fW7fbZ1qA", "_NiDay86Ft0", "qzEAyM0LK2U", "4Q_s6cXSv_8", "GyHjts09XCc", "Wk0wGhL4NqU", "lDRSITwAXQQ", "k-1Dqz8Hj8g", "M2RlwN7tvVQ", "8172bC179T4", "3MLsRBjkrVo", "2hptE3ewkD4", "Fs0pZ_GrTy8", "6LYgg3_Emy0", "VYj5hUnmTHc", "GwD-GxZhl1E", "_0qO3Xm9de8", "VZulo6aMtBw", "ai092-4JRYE", "bnd0uipQKO4", "ydydhlkCVSQ", "nXyTU4Qf6d0", "X-M8DQyxJJs", "hI9YO460YRU", "_NiDay86Ft0", "nu16SuKt2gY", "kPXwxHRqcpY", "66nT9vv4Ifo", "-ZoZelFVbLc", "s3njVYErHeI", "E9VGh-13yto", "4LUq0PBZAtA", "EwaVWdhxrWA", "yUuXueizmZY", "DUBbS4xa3LY", "D9rhRJ2u7Ec", "-3MkYFq3f-Y", "a-77QgKuzmo", "12gKUVXHbWw", "Ceb7Pp7e7u4", "OBB1BHsDTbI", "Fpzzmry6NIE", "bX2qnkO3eX8", "ue7hP7AOplo", "wN0QWV-6ozE", "EAEnBo9Uh1g", "o4xjA96A9G4", "Sxk3-k8tAIc", "6MQE9W1F1ys", "pV29MuEm3xo"]; // trump
+$url = ["YxI6GV30yL0", "Fl6XFatFTjs", "5VE9nihee7o", "u3dhGy1-Z2k", "fy_WJEs71Gw", "-6m_0fOkQ3E", "D-5ZVHcm-2M", "-dHLd3DnkEI", "RD5qQhEy2L0", "VNc6oAnCOLs", "U2ytZcISqKY", "GOmwVXDdKRM", "g_wkSGLVpcE", "ZBpjqP3qrMQ", "SOtiKXvA-q0", "UbEalLMQvOw", "Z1wRoI-8dhg", "fsR8wK5XqUM", "nD1QaeeZ-gw", "DnEfPDOifc0", "75x6nb5NqYM", "BFQG0Bfqaoo", "rG8cGkbGbYQ", "VNSUxI-9vqI", "MWAJQEuYbTA", "iSdR5bgpVZc", "lXnA8-8lVbM", "hPJdGVPf9h0", "y03Sc0H3n8s", "_02BeByzqPY", "c_9ThARis10", "m_ZtgSTpv9Y", "-vOoPd3BUT8", "8oimjUWpWlU", "f3-13H3A2Y8", "FsYK_EOJsms", "nqaNtO27G9Q", "H1gfcakwieU", "BPIARhlQarw", "cG9IYu4TMj4", "MI6iFz14O3U", "9uVWXeCULAM", "rKV9nCadurE", "P2Jhepbbcjc", "Gu29J45xPZ8", "feJbR25IHj4", "Ecg3n1DhiJc", "dIA0NXmB3gU", "polD2-vVj8s", "aIB6Ac8Bl1w", "RjarHX2MGTQ", "s_HIEIiv8Ao", "j5Xv80YydnI", "TV7w1dnipnM", "U2IUU7lrRXQ", "cMRJjfhsTkY", "NUc4rQp4trI"]; // clinton
+// $url = ["7BGYYaaLrTc"]; // first debate Clinton / Trump
 $countUrls = count($url) - 1;
 
 echo "[";
